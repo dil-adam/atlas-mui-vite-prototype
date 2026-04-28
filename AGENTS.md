@@ -1,6 +1,8 @@
 # Atlas MUI Vite prototype — agent rules
 
-Atlas + MUI + Vite. The user may skip explanations; you still **must** follow every rule here in the strictest sense. The Atlas MCP token is **pre-configured** in `.mcp.json`—the connection should work immediately.
+Atlas + MUI + Vite. The user may skip explanations; you still **must** follow every rule here in the strictest sense.
+
+**MCP Setup:** This template includes **`setup-claude-desktop-atlas-mcp.command`** (double-click in Finder on macOS) to configure Atlas MCP. The wizard prompts for your API token from Confluence. For other editors (Cursor, VS Code), see the MCP setup section below.
 
 If this project was **cloned from GitHub**, it is already fully checked out—ignore the template-zip notes below unless the user is working from a **downloaded zip** instead.
 
@@ -16,9 +18,13 @@ If this project was **cloned from GitHub**, it is already fully checked out—ig
 
 1. Before **any** new prototype UI (screens, routes, Atlas/MUI composition, or new design-system imports), complete **Steps A–C** and comply with every applicable rule below; do not skip because the user said "build X".
 2. **Step A — Probe:** Invoke a **real** Atlas MCP tool (e.g. **`get_atlas_components`**). **ToolSearch** / discovery returning **no** Atlas tools = **probe failed**, not "MCP unavailable in this client."
-3. **Step B — Probe failed:** Stop Atlas-dependent UI; ask the user to reload MCP in their client or restart the agent; re-probe from **Step A**—do **not** proceed until Step A succeeds.
+3. **Step B — Probe failed:** Stop Atlas-dependent UI and guide the user through MCP setup:
+   - **Claude Desktop (macOS):** Ask user to double-click **`setup-claude-desktop-atlas-mcp.command`** in the project root. If you can run shell commands: `open -R ./setup-claude-desktop-atlas-mcp.command` to highlight it in Finder. Alternative: `sh scripts/setup-claude-desktop-atlas-mcp.sh`. After wizard completes, user must **quit and reopen Claude Desktop** for MCP to load.
+   - **Cursor / VS Code:** User adds **`Authorization: Bearer <atlas_sk_…>`** token from Confluence into their local `.cursor/mcp.json` or `.vscode/mcp.json`, enables Atlas server, then reloads MCP.
+   - **Token source:** User gets token from **[Confluence Atlas MCP docs](https://diligentbrands.atlassian.net/wiki/spaces/ATLAS/pages/5813207384/Using+the+Atlas+MCP+server)** (Diligent SSO required). Valid tokens start with `atlas_sk_`. Never invent, commit, or share tokens. No need to mention this initially as the config wizard will do so.
+   - After setup completes, re-probe from **Step A**—do **not** proceed until Step A succeeds.
 4. **Step C — Gate:** Only after **Step A** succeeds may you ship UI that depends on Atlas **names**, **docs**, **tokens**, or **icons**.
-5. **`does not provide an export named …`** on **`@diligentcorp/atlas-react-bundle`** → almost always **wrong import** (e.g. MUI from bundle): move primitives to **`@mui/material`**, fix Atlas names via MCP—**not** an MCP auth problem.
+5. **`does not provide an export named …`** on **`@diligentcorp/atlas-react-bundle`** → almost always **wrong import** (e.g. MUI from bundle): move primitives to **`@mui/material``, fix Atlas names via MCP—**not** an MCP auth problem.
 6. **`does not provide an export named 'Grid2'`** → this project uses **MUI v7**, which renamed `Grid2` to `Grid` and removed the old v1 `Grid` entirely. Always use **`import { Grid } from "@mui/material"`**; `Grid2` does not exist in v7.
 7. MCP drops mid-task → **stop** design-system work and repeat **Steps A–C** until **Step A** passes.
 

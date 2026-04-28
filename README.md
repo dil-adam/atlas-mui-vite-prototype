@@ -5,10 +5,19 @@ A [Vite](https://vitejs.dev)+React app pre-configured with the Diligent **Atlas*
 ## What’s included
 
 - **Atlas React bundle** — Components, tokens, icons, and `AppLayout` (MUI X Pro licensed through the layout).
-- **MCP** — `.mcp.json` (and editor copies) for Atlas, MUI docs, and Chrome DevTools. Token is set when the project is prepared for download; for a clone, ensure your client has a valid `Authorization: Bearer atlas_sk_…` for Atlas if needed.
+- **MCP Setup Wizard** — `setup-claude-desktop-atlas-mcp.command` (double-click on macOS) configures Claude Desktop. See [`MCP_SETUP.md`](./MCP_SETUP.md) for all editors.
+- **MCP** — `.mcp.json` (and editor copies) for Atlas, MUI docs, and Chrome DevTools. Tokens must be added per `MCP_SETUP.md`.
 - **Agent rules** — `AGENTS.md` and `CLAUDE.md` describe strict workflow and MCP usage for AI assistants.
 
 ## Quick start
+
+### 1. Set up Atlas MCP (first time only)
+
+**Claude Desktop (macOS):** Double-click `setup-claude-desktop-atlas-mcp.command` in Finder, then quit and reopen Claude Desktop.
+
+**Other editors:** See [`MCP_SETUP.md`](./MCP_SETUP.md) for Cursor, VS Code, and other clients.
+
+### 2. Install and run
 
 ```bash
 pnpm install
@@ -42,9 +51,11 @@ This repository is set up for **Vercel**-style deploys from `main` (VibeSharing 
 
 ## Learn more
 
+- [`MCP_SETUP.md`](./MCP_SETUP.md) — Atlas MCP setup for all editors
 - [`AGENTS.md`](./AGENTS.md) — Full rules for AI agents
 - [Atlas documentation](https://atlas.diligent.com/)
 - [MUI Storybook (Atlas)](https://atlas.diligent.com/storybook-static-mui/)
+- [Atlas MCP on Confluence](https://diligentbrands.atlassian.net/wiki/spaces/ATLAS/pages/5813207384/Using+the+Atlas+MCP+server) — Token generation and troubleshooting
 
 ## Source
 
