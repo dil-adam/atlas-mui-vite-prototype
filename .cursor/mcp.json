@@ -1,0 +1,27 @@
+{
+  "mcpServers": {
+    "Atlas": {
+      "type": "http",
+      "url": "https://atlas.diligent.com/api/mcp",
+      "headers": {
+        "x-atlas-environment": "prototype"
+      }
+    },
+    "mui": {
+      "type": "stdio",
+      "command": "npx",
+      "args": [
+        "-y",
+        "@mui/mcp@latest"
+      ]
+    },
+    "chrome-devtools": {
+      "type": "stdio",
+      "command": "npx",
+      "args": [
+        "-y",
+        "chrome-devtools-mcp"
+      ]
+    }
+  }
+}

@@ -1,11 +1,11 @@
 ---
-description: "Deployment and code structure rules for this prototype"
+description: "Deployment and project structure (Vite + Vercel / VibeSharing)"
 alwaysApply: true
 ---
 
 # Deployment
 
-This prototype is hosted on VibeSharing with a GitHub-to-Vercel pipeline.
+This prototype is hosted on [VibeSharing](https://vibesharing.app) with a GitHub-to-Vercel pipeline.
 
 ## How to deploy
 
@@ -15,39 +15,23 @@ git commit -m "Describe what changed"
 git push origin main
 ```
 
-That's it. Vercel auto-deploys from this repo on every push to main.
+Vercel auto-deploys from this repository on every push to `main`.
 
-## Deploy Rules
+## Deploy rules
 
-- Do NOT run `vercel`, `vercel --yes`, or `vercel deploy`
-- Do NOT zip files or use any deploy API
-- Do NOT create new Vercel projects
-- Do NOT use curl to call vibesharing.app/api endpoints
-- ONLY deploy by pushing to this git repo
+- Do **not** run `vercel`, `vercel --yes`, or `vercel deploy` from the CLI
+- Do **not** zip files or use a deploy API
+- Do **not** create new Vercel projects manually
+- Deploy **only** by pushing to this git repository
 
-## Code Structure
+## Project structure (Vite + React)
 
-This is a **Next.js 14 App Router** project. Understand where files go:
+- `index.html` — Vite entry (root)
+- `src/` — application source (`App.tsx`, `src/pages/`, `src/components/`, …)
+- `public/` — static assets (served as-is at URL root)
 
-- app/page.tsx — Main page visitors see. **Edit this file for your prototype.**
-- app/layout.tsx — Root layout wrapper
-- public/ — Static files (images, standalone HTML)
+Vite is not Next.js: there is no `app/` directory. The main UI lives under `src/`; static files belong in `public/`.
 
-### NEVER put HTML files in the repo root
+## Build
 
-Next.js does not serve files from the root directory. An index.html or prototype.html at the repo root will NOT be accessible to visitors.
-
-| What you have | Where it goes |
-|---|---|
-| React component | app/page.tsx |
-| Standalone HTML file | public/filename.html |
-| Images, fonts, assets | public/ |
-
-### If keeping a standalone HTML file
-
-Put it in public/ and update app/page.tsx to redirect:
-
-```tsx
-import { redirect } from "next/navigation";
-export default function Page() { redirect("/prototype.html"); }
-```
+Production build: `pnpm install` then `pnpm run build` (output in `dist/`). The hosting platform runs this on deploy.
