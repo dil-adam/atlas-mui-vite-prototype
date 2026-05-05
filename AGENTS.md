@@ -19,7 +19,7 @@ If this project was **cloned from GitHub**, it is already fully checked out—ig
 1. Before **any** new prototype UI (screens, routes, Atlas/MUI composition, or new design-system imports), complete **Steps A–C** and comply with every applicable rule below; do not skip because the user said "build X".
 2. **Step A — Probe:** Invoke a **real** Atlas MCP tool (e.g. **`get_atlas_components`**). **ToolSearch** / discovery returning **no** Atlas tools = **probe failed**, not "MCP unavailable in this client."
 3. **Step B — Probe failed:** Stop Atlas-dependent UI and guide the user through MCP setup:
-   - **Claude Desktop (macOS):** Ask user to double-click **`setup-claude-desktop-atlas-mcp.command`** in the project root. If you can run shell commands: `open -R ./setup-claude-desktop-atlas-mcp.command` to highlight it in Finder. Alternative: `sh scripts/setup-claude-desktop-atlas-mcp.sh`. After wizard completes, user must **quit and reopen Claude Desktop** for MCP to load.
+   - **Claude Desktop (macOS):** Highlight **`setup-claude-desktop-atlas-mcp.command`** in Finder with `open -R ./setup-claude-desktop-atlas-mcp.command`, then ask user to double-click it. Alternative: `sh scripts/setup-claude-desktop-atlas-mcp.sh`. After wizard completes, user must **quit and reopen Claude Desktop** for MCP to load.
    - **Cursor / VS Code:** User adds **`Authorization: Bearer <atlas_sk_…>`** token from Confluence into their local `.cursor/mcp.json` or `.vscode/mcp.json`, enables Atlas server, then reloads MCP.
    - **Token source:** User gets token from **[Confluence Atlas MCP docs](https://diligentbrands.atlassian.net/wiki/spaces/ATLAS/pages/5813207384/Using+the+Atlas+MCP+server)** (Diligent SSO required). Valid tokens start with `atlas_sk_`. Never invent, commit, or share tokens. No need to mention this initially as the config wizard will do so.
    - After setup completes, re-probe from **Step A**—do **not** proceed until Step A succeeds.
@@ -82,7 +82,7 @@ If this project was **cloned from GitHub**, it is already fully checked out—ig
 30. Before **`sx`** / **`useTheme()`** token paths: **`search_atlas_tokens_by_path`** (or current equivalent)—**never invent** paths.
 31. Confirm icon names via MCP or **`node_modules/@diligentcorp/atlas-react-bundle/dist/icons/`**.
 32. Selection order: Atlas default → Atlas variants → Atlas + **`sx`** + tokens → plain MUI **only** if MCP shows **no** Atlas option—do **not** skip MCP for that choice.
-33. **Read docs before coding — every Atlas component, every time it first appears:** call **`get_atlas_component_docs`** for that component, then **read the full output before writing a single line of code**. If the MCP response was persisted to a file (Claude Code saves large responses as files), use the **Read tool** on that file — calling the MCP tool is not the same as reading the docs. Relying on general MUI knowledge as a substitute is not permitted. Atlas-specific variants, presets, token usage, and import paths are only in those docs.
+33. **Read docs before coding — every Atlas component, every time it first appears:** call **`get_atlas_component_docs`** for that component, then **read the full output before writing a single line of code**. If the MCP response was persisted to a file (Claude Code saves large responses as files), use the **Read tool** on that file — calling the MCP tool is not the same as reading the docs. If the file is too large to read in one call, read it in chunks using `offset` and `limit` parameters, or use `grep` to search for specific sections (e.g., `grep -A 20 "PageHeader" <file>`). Relying on general MUI knowledge as a substitute is not permitted. Atlas-specific variants, presets, token usage, and import paths are only in those docs. **Common issues from skipping docs:** PageHeader has `pageTitle`/`pageSubtitle` props (not `title`/`description`), no `actions` prop exists, StatusIndicator variant types may need type casting, Grid v7 API differs from v5.
 34. **MUI components with no Atlas MCP coverage:** before writing code, call the **MUI MCP** (e.g. `mcp__mui__*`) to retrieve the official v7 API for that component — do not rely on training-data knowledge of MUI APIs, which may be stale or version-mismatched.
 35. **Pre-submit component checklist** — before finalising any component, verify each of these Atlas-specific patterns: (a) **Status/state display** → did you use `StatusIndicator`, not `Chip`? Ask "can the user remove this label?" — No = `StatusIndicator`, Yes = `Chip`. (b) **Grid layout** → did you use `size={{}}` props, not the v5 `item`/`xs`/`md`/`lg` props? (c) **Form fields** → did you use `slotProps`, not the deprecated `InputProps`? Fix any violation before moving to the next component.
 
@@ -111,13 +111,27 @@ If this project was **cloned from GitHub**, it is already fully checked out—ig
 
 ---
 
-## Deployment (VibeSharing / Vercel)
+## Deployment (VibeSharing / Vercel / Netlify)
 
-44. This repo is wired for **git-push deploy** (Vercel auto-builds Vite). To ship changes: `git add`, `git commit`, `git push origin main`. Do **not** use the Vercel CLI, zip upload, or deploy APIs—only push to the remote. If you cannot push (e.g. sandbox), leave a clean commit for the user to push.
+44. This repo is wired for **git-push deploy** (Vercel/Netlify auto-builds Vite). To ship changes: `git add`, `git commit`, `git push origin main`. Do **not** use the Vercel CLI, zip upload, or deploy APIs—only push to the remote. If you cannot push (e.g. sandbox), leave a clean commit for the user to push.
+45. **SPA routing for Netlify/static hosts:** This is a single-page application using React Router. For client-side routing to work on static hosts (Netlify, VibeSharing), create **both** of these files:
+   - **`public/_redirects`** with content: `/*    /index.html   200`
+   - **`netlify.toml`** with:
+     ```toml
+     [build]
+       command = "npm run build"
+       publish = "dist"
+     
+     [[redirects]]
+       from = "/*"
+       to = "/index.html"
+       status = 200
+     ```
+   Without these, routes like `/audits` or `/people` will return 404 on page refresh. Vercel handles SPA routing automatically, but Netlify and similar hosts require explicit configuration. **Create these files proactively** when building any multi-route SPA prototype.
 
 ---
 
 ## Dependency
 
-45. **Never** commit real **`atlas_sk_`**, fabricate secrets, or paste live tokens in git/chat—advise **rotation** if leaked.
-46. **`package.json`** installs the bundle over **https**; lockfiles may drift; the bundle is **not** a full MUI mirror (see imports). Lockfiles are **gitignored**—use forced install methods freely (`npm install --force` / `pnpm install --no-frozen-lockfile`) when integrity errors occur; no need to ask permission.
+46. **Never** commit real **`atlas_sk_`**, fabricate secrets, or paste live tokens in git/chat—advise **rotation** if leaked.
+47. **`package.json`** installs the bundle over **https**; lockfiles may drift; the bundle is **not** a full MUI mirror (see imports). Lockfiles are **gitignored**—use forced install methods freely (`npm install --force` / `pnpm install --no-frozen-lockfile`) when integrity errors occur; no need to ask permission.
