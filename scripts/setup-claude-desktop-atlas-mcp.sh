@@ -278,6 +278,114 @@ if grep -q 'https://atlas\.diligent\.com/api/mcp' "$CLAUDE_CONFIG" 2>/dev/null; 
     exit 1
   fi
   printf '\033[2K\r'
+
+  # --- Configure project-level MCP settings ---
+  PROJECT_ROOT="$(cd "$(dirname "$0")/.." && pwd)"
+  PROJECT_SETTINGS="${PROJECT_ROOT}/.claude/settings.local.json"
+  PROJECT_MCP="${PROJECT_ROOT}/.mcp.json"
+
+  printf '  %s%sConfiguring project-level MCP settings…%s\n' "${C_DIM}" "${C_BOLD}" "${C_RESET}"
+
+  # Update .mcp.json if it exists (for Claude Code CLI)
+  if [ -f "$PROJECT_MCP" ]; then
+    if command -v python3 >/dev/null 2>&1; then
+      python3 - <<EOFMCP || exit 1
+import json
+import sys
+
+try:
+    with open('${PROJECT_MCP}', 'r') as f:
+        config = json.load(f)
+except (json.JSONDecodeError, FileNotFoundError):
+    config = {}
+
+# Ensure mcpServers exists
+if 'mcpServers' not in config:
+    config['mcpServers'] = {}
+
+# Update Atlas MCP with token
+if 'Atlas' not in config['mcpServers']:
+    config['mcpServers']['Atlas'] = {}
+
+config['mcpServers']['Atlas']['type'] = 'http'
+config['mcpServers']['Atlas']['url'] = 'https://atlas.diligent.com/api/mcp'
+
+# Add or update Authorization header
+if 'headers' not in config['mcpServers']['Atlas']:
+    config['mcpServers']['Atlas']['headers'] = {}
+
+config['mcpServers']['Atlas']['headers']['Authorization'] = 'Bearer ${ATLAS_MCP_TOKEN}'
+
+with open('${PROJECT_MCP}', 'w') as f:
+    json.dump(config, f, indent=2)
+    f.write('\n')
+
+sys.exit(0)
+EOFMCP
+    fi
+  fi
+
+  mkdir -p "${PROJECT_ROOT}/.claude" || exit 1
+
+  if [ ! -f "$PROJECT_SETTINGS" ]; then
+    # Create new settings file with all three MCP servers enabled
+    cat > "$PROJECT_SETTINGS" <<'EOFPROJECT'
+{
+  "enabledMcpjsonServers": [
+    "Atlas",
+    "mui",
+    "chrome-devtools"
+  ],
+  "permissions": {
+    "allow": [
+      "Bash(git fetch *)"
+    ]
+  }
+}
+EOFPROJECT
+  else
+    # Update existing settings file to ensure all three MCPs are enabled
+    if command -v python3 >/dev/null 2>&1; then
+      python3 - <<EOFPYTHON || exit 1
+import json
+import sys
+
+try:
+    with open('${PROJECT_SETTINGS}', 'r') as f:
+        config = json.load(f)
+except (json.JSONDecodeError, FileNotFoundError):
+    config = {}
+
+# Ensure enabledMcpjsonServers exists and contains all three servers
+if 'enabledMcpjsonServers' not in config:
+    config['enabledMcpjsonServers'] = []
+
+required_servers = ['Atlas', 'mui', 'chrome-devtools']
+for server in required_servers:
+    if server not in config['enabledMcpjsonServers']:
+        config['enabledMcpjsonServers'].append(server)
+
+# Ensure permissions structure exists
+if 'permissions' not in config:
+    config['permissions'] = {'allow': ['Bash(git fetch *)']}
+elif 'allow' not in config['permissions']:
+    config['permissions']['allow'] = ['Bash(git fetch *)']
+elif 'Bash(git fetch *)' not in config['permissions']['allow']:
+    config['permissions']['allow'].append('Bash(git fetch *)')
+
+with open('${PROJECT_SETTINGS}', 'w') as f:
+    json.dump(config, f, indent=2)
+    f.write('\n')
+
+sys.exit(0)
+EOFPYTHON
+    else
+      # Fallback if Python is not available - just warn
+      printf '  %s%sWarning: Python not found. Please manually add "Atlas", "mui", and "chrome-devtools" to enabledMcpjsonServers in:%s\n' "${C_WARN}" "${C_BOLD}" "${C_RESET}"
+      printf '  %s%s%s\n' "${C_ACCENT}" "$PROJECT_SETTINGS" "${C_RESET}"
+    fi
+  fi
+
   success_banner "Bearer token updated" "Quit and reopen Claude Desktop so MCP picks up the change."
   exit 0
 fi
@@ -297,4 +405,112 @@ else
 fi
 
 printf '\033[2K\r'
-success_banner "Atlas MCP added" "Quit and reopen Claude Desktop so MCP loads."
+
+# --- Configure project-level MCP settings ---
+PROJECT_ROOT="$(cd "$(dirname "$0")/.." && pwd)"
+PROJECT_SETTINGS="${PROJECT_ROOT}/.claude/settings.local.json"
+PROJECT_MCP="${PROJECT_ROOT}/.mcp.json"
+
+printf '  %s%sConfiguring project-level MCP settings…%s\n' "${C_DIM}" "${C_BOLD}" "${C_RESET}"
+
+# Update .mcp.json if it exists (for Claude Code CLI)
+if [ -f "$PROJECT_MCP" ]; then
+  if command -v python3 >/dev/null 2>&1; then
+    python3 - <<EOFMCP2 || exit 1
+import json
+import sys
+
+try:
+    with open('${PROJECT_MCP}', 'r') as f:
+        config = json.load(f)
+except (json.JSONDecodeError, FileNotFoundError):
+    config = {}
+
+# Ensure mcpServers exists
+if 'mcpServers' not in config:
+    config['mcpServers'] = {}
+
+# Update Atlas MCP with token
+if 'Atlas' not in config['mcpServers']:
+    config['mcpServers']['Atlas'] = {}
+
+config['mcpServers']['Atlas']['type'] = 'http'
+config['mcpServers']['Atlas']['url'] = 'https://atlas.diligent.com/api/mcp'
+
+# Add or update Authorization header
+if 'headers' not in config['mcpServers']['Atlas']:
+    config['mcpServers']['Atlas']['headers'] = {}
+
+config['mcpServers']['Atlas']['headers']['Authorization'] = 'Bearer ${ATLAS_MCP_TOKEN}'
+
+with open('${PROJECT_MCP}', 'w') as f:
+    json.dump(config, f, indent=2)
+    f.write('\n')
+
+sys.exit(0)
+EOFMCP2
+  fi
+fi
+
+mkdir -p "${PROJECT_ROOT}/.claude" || exit 1
+
+if [ ! -f "$PROJECT_SETTINGS" ]; then
+  # Create new settings file with all three MCP servers enabled
+  cat > "$PROJECT_SETTINGS" <<'EOF'
+{
+  "enabledMcpjsonServers": [
+    "Atlas",
+    "mui",
+    "chrome-devtools"
+  ],
+  "permissions": {
+    "allow": [
+      "Bash(git fetch *)"
+    ]
+  }
+}
+EOF
+else
+  # Update existing settings file to ensure all three MCPs are enabled
+  if command -v python3 >/dev/null 2>&1; then
+    python3 - <<EOF || exit 1
+import json
+import sys
+
+try:
+    with open('${PROJECT_SETTINGS}', 'r') as f:
+        config = json.load(f)
+except (json.JSONDecodeError, FileNotFoundError):
+    config = {}
+
+# Ensure enabledMcpjsonServers exists and contains all three servers
+if 'enabledMcpjsonServers' not in config:
+    config['enabledMcpjsonServers'] = []
+
+required_servers = ['Atlas', 'mui', 'chrome-devtools']
+for server in required_servers:
+    if server not in config['enabledMcpjsonServers']:
+        config['enabledMcpjsonServers'].append(server)
+
+# Ensure permissions structure exists
+if 'permissions' not in config:
+    config['permissions'] = {'allow': ['Bash(git fetch *)']}
+elif 'allow' not in config['permissions']:
+    config['permissions']['allow'] = ['Bash(git fetch *)']
+elif 'Bash(git fetch *)' not in config['permissions']['allow']:
+    config['permissions']['allow'].append('Bash(git fetch *)')
+
+with open('${PROJECT_SETTINGS}', 'w') as f:
+    json.dump(config, f, indent=2)
+    f.write('\n')
+
+sys.exit(0)
+EOF
+  else
+    # Fallback if Python is not available - just warn
+    printf '  %s%sWarning: Python not found. Please manually add "Atlas", "mui", and "chrome-devtools" to enabledMcpjsonServers in:%s\n' "${C_WARN}" "${C_BOLD}" "${C_RESET}"
+    printf '  %s%s%s\n' "${C_ACCENT}" "$PROJECT_SETTINGS" "${C_RESET}"
+  fi
+fi
+
+success_banner "Atlas MCP configured" "Quit and reopen Claude Desktop so MCP loads."
