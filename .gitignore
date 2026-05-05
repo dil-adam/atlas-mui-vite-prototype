@@ -3,3 +3,8 @@ dist
 package-lock.json
 pnpm-lock.yaml
 .DS_Store
+
+# MCP configuration files (may contain auth tokens)
+.mcp.json
+.cursor/mcp.json
+.vscode/mcp.json
