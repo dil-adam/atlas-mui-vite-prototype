@@ -209,6 +209,16 @@ success_banner() {
   printf '\n'
   printf '  %s%s%s\n' "${C_DIM}" "${_hint}" "${C_RESET}"
   printf '\n'
+
+  # Countdown and auto-close
+  for i in 5 4 3 2 1; do
+    printf '\r  %sClosing this window in %d...%s' "${C_DIM}" "$i" "${C_RESET}"
+    sleep 1
+  done
+  printf '\r\033[K'
+
+  # Close the terminal window (macOS Terminal.app)
+  osascript -e 'tell application "Terminal" to close first window' 2>/dev/null || true
 }
 
 error_box() {
